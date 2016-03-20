@@ -14,6 +14,14 @@ PROJECT_TARGET = 'package/%s-%s' % (PROJECT_NAME, PROJECT_VERSION)
 PROJECT_PACKAGE = '%s.zip' % (PROJECT_TARGET)
 DEPLOY_BASEDIR = 'deploy'
 DEPLOY_DIR = '%s/deploy' % (DEPLOY_BASEDIR)
+PROJECT_RUNNING_CMD = 'bin/aroundplay'
+
+def get_project_running_basedir(mode):
+    if type(mode) != int:
+        print('mode must be integer type')
+        return false
+    PROJECT_RUNNING_BASEDIR = '%s-%d/%s-%s' % (DEPLOY_DIR, mode, PROJECT_NAME, PROJECT_VERSION)
+    return PROJECT_RUNNING_BASEDIR
 
 class BoltMetadata(object):
     def __init__(self):
@@ -46,7 +54,13 @@ class BoltMetadata(object):
         subprocess.call(['unzip', PROJECT_PACKAGE, '-d', DIST_DIR])
 
     def run_server(self):
-        return 0
+        DEPLOY_RUN_COMMAND = '%s/%s' % (get_project_running_basedir(self.mode), PROJECT_RUNNING_CMD)
+#        subprocess.call([DEPLOY_RUN_COMMAND, '-Dhttp.port=%d' % (BASE_PORT + self.mode)])
+        os.system(DEPLOY_RUN_COMMAND + ' -Dhttp.port=%d' % (BASE_PORT + self.mode) + '&')
+
+    def cleanup_old_server(self):
+        #TODO
+        pass
 
     def toString(self):
         return 'BoltMetadata(mode: %d, pid: %d)' % (self.mode, self.pid)
@@ -56,6 +70,8 @@ def run():
     meta.load_file(METAFILE)
     meta.mode = 1 - meta.mode
     meta.prepare_server()
+    meta.run_server()
+    meta.cleanup_old_server()
     meta.save_file(METAFILE)
 
 if __name__ == '__main__':
