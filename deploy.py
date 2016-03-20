@@ -52,6 +52,7 @@ class BoltMetadata(object):
         meta_file.close()
 
     def prepare_server(self):
+        self.mode = 1 - self.mode
         self.unpack()
 
     def unpack(self):
@@ -83,7 +84,6 @@ class BoltMetadata(object):
 def run():
     meta = BoltMetadata()
     meta.load_file(METAFILE)
-    meta.mode = 1 - meta.mode
     meta.prepare_server()
     meta.run_server()
     meta.cleanup_old_server()
