@@ -4,6 +4,7 @@ import os
 import json
 import subprocess
 import shutil
+import signal
 
 PROJECT_ROOT = os.path.realpath('')
 METAFILE = PROJECT_ROOT + '/deploy.info'
@@ -27,9 +28,15 @@ class BoltMetadata(object):
     def __init__(self):
         self.mode = 0
         self.pid = 0
+        self.old_pid = 0
         self.port = 0
 
     def load_file(self, metafile):
+        if not os.path.isfile(metafile):
+            self.mode = 0
+            self.pid = 0
+            return
+
         meta_file = open(metafile, 'r')
         meta = meta_file.read()
         meta_json = json.loads(meta)
@@ -54,13 +61,21 @@ class BoltMetadata(object):
         subprocess.call(['unzip', PROJECT_PACKAGE, '-d', DIST_DIR])
 
     def run_server(self):
-        DEPLOY_RUN_COMMAND = '%s/%s' % (get_project_running_basedir(self.mode), PROJECT_RUNNING_CMD)
-#        subprocess.call([DEPLOY_RUN_COMMAND, '-Dhttp.port=%d' % (BASE_PORT + self.mode)])
-        os.system(DEPLOY_RUN_COMMAND + ' -Dhttp.port=%d' % (BASE_PORT + self.mode) + '&')
+        PROJECT_RUN_BIN = '%s/%s' % (get_project_running_basedir(self.mode), PROJECT_RUNNING_CMD)
+        ARG_PORT = '-Dhttp.port=%d' % (BASE_PORT + self.mode)
+        ARG_RUNMODE = '-Drun.mode=service'
+        PROJECT_RUN_CMD = [PROJECT_RUN_BIN, ARG_PORT, ARG_RUNMODE]
+
+        process = subprocess.Popen(PROJECT_RUN_CMD)
+        self.old_pid = self.pid
+        self.pid = process.pid
 
     def cleanup_old_server(self):
-        #TODO
-        pass
+        target_pid = self.old_pid
+        if target_pid == 0:
+            return
+
+        os.kill(target_pid, signal.SIGTERM)
 
     def toString(self):
         return 'BoltMetadata(mode: %d, pid: %d)' % (self.mode, self.pid)
