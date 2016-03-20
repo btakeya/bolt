@@ -33,7 +33,7 @@ class BoltMetadata(object):
 
     def load_file(self, metafile):
         if not os.path.isfile(metafile):
-            self.mode = 0
+            self.mode = 1
             self.pid = 0
             return
 
