@@ -12,7 +12,8 @@ PROJECT_NAME = 'aroundplay'
 PROJECT_VERSION = '1.0-SNAPSHOT'
 PROJECT_TARGET = 'package/%s-%s' % (PROJECT_NAME, PROJECT_VERSION)
 PROJECT_PACKAGE = '%s.zip' % (PROJECT_TARGET)
-DEPLOY_DIR = 'deploy/deploy'
+DEPLOY_BASEDIR = 'deploy'
+DEPLOY_DIR = '%s/deploy' % (DEPLOY_BASEDIR)
 
 class BoltMetadata(object):
     def __init__(self):
