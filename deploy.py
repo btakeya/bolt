@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import json
 import subprocess
 import shutil
 import signal
+
+import bolt_nginx
 
 PROJECT_ROOT = os.path.realpath('')
 METAFILE = PROJECT_ROOT + '/deploy.info'
@@ -71,6 +74,15 @@ class BoltMetadata(object):
         self.old_pid = self.pid
         self.pid = process.pid
 
+    def replace_server(self):
+        # TODO: reload reverse proxy (old -> new)
+        try:
+            bolt_nginx.make_conf_file(self.mode)
+            bolt_nginx.reload_nginx()
+        except:
+            print('Errors on reloading nginx: {}', sys.exc_info()[0])
+        self.cleanup_old_server()
+
     def cleanup_old_server(self):
         target_pid = self.old_pid
         if target_pid == 0:
@@ -86,7 +98,7 @@ def run():
     meta.load_file(METAFILE)
     meta.prepare_server()
     meta.run_server()
-    meta.cleanup_old_server()
+    meta.replace_server()
     meta.save_file(METAFILE)
 
 if __name__ == '__main__':
