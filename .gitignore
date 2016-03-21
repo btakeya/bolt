@@ -3,3 +3,5 @@ package
 tags
 
 deploy.info
+
+__pycache__
