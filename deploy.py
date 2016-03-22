@@ -6,6 +6,7 @@ import json
 import subprocess
 import shutil
 import signal
+import time
 
 import bolt_nginx
 
@@ -81,6 +82,8 @@ class BoltMetadata(object):
             bolt_nginx.reload_nginx()
         except:
             print('Errors on reloading nginx: {}', sys.exc_info()[0])
+
+        time.sleep(10)
         self.cleanup_old_server()
 
     def cleanup_old_server(self):

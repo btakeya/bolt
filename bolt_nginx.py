@@ -10,6 +10,7 @@ NGINX_CONF_AVAILABLE_DIR = '/etc/nginx/sites-available'
 NGINX_CONF_ENABLE_DIR = '/etc/nginx/sites-enabled'
 NGINX_CONF_FILE = NGINX_CONF_AVAILABLE_DIR + '/around-{}'
 NGINX_CONF_SYMLINK = NGINX_CONF_ENABLE_DIR + '/around-{}'
+
 def make_conf_format(mode):
     NGINX_CONF_FORMAT = \
         "server {\n" + \
