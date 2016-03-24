@@ -13,19 +13,19 @@ import bolt_nginx
 PROJECT_ROOT = os.path.realpath('')
 METAFILE = PROJECT_ROOT + '/deploy.info'
 BASE_PORT = 9000
-PROJECT_NAME = 'aroundplay'
-PROJECT_VERSION = '1.0-SNAPSHOT'
-PROJECT_TARGET = 'package/%s-%s' % (PROJECT_NAME, PROJECT_VERSION)
-PROJECT_PACKAGE = '%s.zip' % (PROJECT_TARGET)
-DEPLOY_BASEDIR = 'deploy'
-DEPLOY_DIR = '%s/deploy' % (DEPLOY_BASEDIR)
+PROJECT_PACKAGE_FILENAME = 'aroundplay-1.0-SNAPSHOT.zip'
+PROJECT_PACKAGE_NAME = PROJECT_PACKAGE_FILENAME[0:PROJECT_PACKAGE_FILENAME.rfind('.zip')
+PROJECT_PACKAGE_FULLPATH = 'package/{}'.format(PROJECT_PACKAGE_FILENAME)
+PROJECT_EXTRACT_CMD = 'unzip {} -d {}'.format(PROJECT_PACKAGE_FULLPATH, DIST_DIR)
+DEPLOY_DIR = 'deploy/deploy-{}'
 PROJECT_RUNNING_CMD = 'bin/aroundplay'
 
 def get_project_running_basedir(mode):
     if type(mode) != int:
         print('mode must be integer type')
         return false
-    PROJECT_RUNNING_BASEDIR = '%s-%d/%s-%s' % (DEPLOY_DIR, mode, PROJECT_NAME, PROJECT_VERSION)
+
+    PROJECT_RUNNING_BASEDIR = DEPLOY_DIR.format(mode) + '/' + PROJECT_PACKAGE_NAME
     return PROJECT_RUNNING_BASEDIR
 
 class BoltMetadata(object):
@@ -57,26 +57,24 @@ class BoltMetadata(object):
 
     def prepare_server(self):
         self.mode = 1 - self.mode
-        self.unpack()
+        self.extract_package(PROJECT_EXTRACT_CMD.split())
 
-    def unpack(self):
+    def extract_package(self):
         DIST_DIR = '%s-%d' % (DEPLOY_DIR, self.mode)
         if os.path.isdir(DIST_DIR):
             shutil.rmtree(DIST_DIR)
-        subprocess.call(['unzip', PROJECT_PACKAGE, '-d', DIST_DIR])
+        subprocess.call()
 
     def run_server(self):
-        PROJECT_RUN_BIN = '%s/%s' % (get_project_running_basedir(self.mode), PROJECT_RUNNING_CMD)
-        ARG_PORT = '-Dhttp.port=%d' % (BASE_PORT + self.mode)
-        ARG_RUNMODE = '-Drun.mode=service'
-        PROJECT_RUN_CMD = [PROJECT_RUN_BIN, ARG_PORT, ARG_RUNMODE]
+        PROJECT_RUN_CMD = \
+                '{}/{} -Dhttp.port={} -Drun.mode=service' \
+                .format(get_project_running_basedir(self.mode), PROJECT_RUNNING_CMD, (BASE_PORT + self.mode))
 
-        process = subprocess.Popen(PROJECT_RUN_CMD)
-        self.old_pid = self.pid
-        self.pid = process.pid
+        process = subprocess.Popen(PROJECT_RUN_CMD.split())
+        self.old_pid = self.pid # to kill
+        self.pid = process.pid  # just run now
 
     def replace_server(self):
-        # TODO: reload reverse proxy (old -> new)
         try:
             bolt_nginx.make_conf_file(self.mode)
             bolt_nginx.reload_nginx()

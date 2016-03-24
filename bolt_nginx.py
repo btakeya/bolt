@@ -53,7 +53,8 @@ def make_conf_file(mode):
     os.symlink(conf, link)
 
 def reload_nginx():
+    RELOAD_NGINX_CMD = '/etc/init.d/nginx reload'
     if not os.geteuid() == 0:
         sys.exit('[Error] Permission denied: Need to run as Superuser')
 
-    subprocess.call(['/etc/init.d/nginx', 'reload'])
+    subprocess.call(RELOAD_NGINX_CMD.split())
