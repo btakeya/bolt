@@ -59,7 +59,7 @@ class BoltMetadata(object):
         self.extract_package()
 
     def extract_package(self):
-        DIST_DIR = '{}-{}'.format(DEPLOY_DIR, self.mode)
+        DIST_DIR = DEPLOY_DIR.format(self.mode)
         PROJECT_EXTRACT_CMD = 'unzip {} -d {}'.format(PROJECT_PACKAGE_FULLPATH, DIST_DIR)
         if os.path.isdir(DIST_DIR):
             shutil.rmtree(DIST_DIR)
