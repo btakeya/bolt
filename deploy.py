@@ -8,15 +8,14 @@ import shutil
 import signal
 import time
 
-import bolt_nginx
+from webserver import bolt_nginx
 
 PROJECT_ROOT = os.path.realpath('')
 METAFILE = PROJECT_ROOT + '/deploy.info'
 BASE_PORT = 9000
 PROJECT_PACKAGE_FILENAME = 'aroundplay-1.0-SNAPSHOT.zip'
-PROJECT_PACKAGE_NAME = PROJECT_PACKAGE_FILENAME[0:PROJECT_PACKAGE_FILENAME.rfind('.zip')
+PROJECT_PACKAGE_NAME = PROJECT_PACKAGE_FILENAME[0:PROJECT_PACKAGE_FILENAME.rfind('.zip')] # aroundplay-1.0-SNAPSHOT
 PROJECT_PACKAGE_FULLPATH = 'package/{}'.format(PROJECT_PACKAGE_FILENAME)
-PROJECT_EXTRACT_CMD = 'unzip {} -d {}'.format(PROJECT_PACKAGE_FULLPATH, DIST_DIR)
 DEPLOY_DIR = 'deploy/deploy-{}'
 PROJECT_RUNNING_CMD = 'bin/aroundplay'
 
@@ -57,13 +56,14 @@ class BoltMetadata(object):
 
     def prepare_server(self):
         self.mode = 1 - self.mode
-        self.extract_package(PROJECT_EXTRACT_CMD.split())
+        self.extract_package()
 
     def extract_package(self):
-        DIST_DIR = '%s-%d' % (DEPLOY_DIR, self.mode)
+        DIST_DIR = '{}-{}'.format(DEPLOY_DIR, self.mode)
+        PROJECT_EXTRACT_CMD = 'unzip {} -d {}'.format(PROJECT_PACKAGE_FULLPATH, DIST_DIR)
         if os.path.isdir(DIST_DIR):
             shutil.rmtree(DIST_DIR)
-        subprocess.call()
+        subprocess.call(PROJECT_EXTRACT_CMD.split())
 
     def run_server(self):
         PROJECT_RUN_CMD = \
@@ -92,7 +92,7 @@ class BoltMetadata(object):
         os.kill(target_pid, signal.SIGTERM)
 
     def toString(self):
-        return 'BoltMetadata(mode: %d, pid: %d)' % (self.mode, self.pid)
+        return 'BoltMetadata(mode: {}, pid: {})'.format(self.mode, self.pid)
 
 def run():
     meta = BoltMetadata()
